@@ -27,7 +27,7 @@ pub mod vault {
     }
 
     // close
-    pub fn close(_ctx: Context<Close>) -> Result<()> {
-        Ok(())
+    pub fn close(ctx: Context<Close>) -> Result<()> {
+        ctx.accounts.close()
     }
 }

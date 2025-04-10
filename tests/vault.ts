@@ -9,104 +9,94 @@ describe("vault", () => {
   anchor.setProvider(provider);
 
   const program = anchor.workspace.vault as Program<Vault>;
+  const user = provider.wallet.publicKey;
 
   // Derive PDAs
   const vaultState = anchor.web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("state"), provider.publicKey.toBuffer()],
+    [Buffer.from("state"), user.toBytes()],
     program.programId
   )[0];
 
   const vault = anchor.web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("vault"), provider.publicKey.toBuffer()],
+    [Buffer.from("vault"), user.toBytes()],
     program.programId
   )[0];
 
-  it("Initializes the vault", async () => {
-    try {
-      const tx = await program.methods
-        .initialize()
-        .accountsPartial({
-          user: provider.wallet.publicKey,
-          vaultState,
-          vault,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .rpc();
-      console.log("Transaction signature:", tx);
-      console.log(
-        "Vault info:",
-        await provider.connection.getAccountInfo(vault)
-      );
-    } catch (error) {
-      console.error("Error initializing vault:", error);
-    }
-  });
+  console.log("Program ID:", program.programId.toString());
+  console.log("User:", user.toString());
+  console.log("Vault State:", vaultState.toString());
+  console.log("Vault:", vault.toString());
 
-  it("Deposits funds (2 SOL) into the vault", async () => {
-    // try {
+  it("Initializes the vault", async () => {
     const tx = await program.methods
-      .deposit(new anchor.BN(2 * anchor.web3.LAMPORTS_PER_SOL))
-      .accountsPartial({
-        user: provider.wallet.publicKey,
+      .initialize()
+      .accounts({
+        user,
         vaultState,
         vault,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
+      .rpc();
+    console.log("Transaction signature:", tx);
+    console.log("Vault info:", await provider.connection.getAccountInfo(vault));
+    const initialBalance = await provider.connection.getBalance(vault);
+    console.log("Initial vault balance:", initialBalance);
+  });
+
+  it("Deposits funds (2 SOL) into the vault", async () => {
+    const tx = await program.methods
+      .deposit(new anchor.BN(2 * anchor.web3.LAMPORTS_PER_SOL))
+      .accounts({
+        user,
+        vaultState,
+        vault,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      } as any)
       .rpc();
 
     console.log("Transaction signature:", tx);
-    console.log(
-      "Vault info:",
-      await provider.connection.getAccountInfo(vault)
-    );
+    console.log("Vault info:", await provider.connection.getAccountInfo(vault));
     console.log(
       "Vault balance:",
       (await provider.connection.getBalance(vault)).toString()
     );
-    // } catch (error) {
-    //   console.error("Error depositing funds:", error);
-    // }
   });
 
-  // it("Withdraws funds from the vault", async () => {
-  //   const withdrawAmount = new anchor.BN(500);
+  it("Withdraws funds from the vault", async () => {
+    const tx = await program.methods
+      .withdraw(new anchor.BN(1 * anchor.web3.LAMPORTS_PER_SOL))
+      .accounts({
+        user,
+        vaultState,
+        vault,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      } as any)
+      .rpc();
 
-  //   const tx = await program.methods
-  //     .withdraw(withdrawAmount)
-  //     .accounts({
-  //       vault: vaultAccount.publicKey,
-  //       user: program.provider.publicKey,
-  //     })
-  //     .rpc();
+    console.log("Transaction signature:", tx);
+    console.log("Vault info:", await provider.connection.getAccountInfo(vault));
+    console.log(
+      "Vault balance:",
+      (await provider.connection.getBalance(vault)).toString()
+    );
+  });
 
-  //   console.log("Transaction signature for withdraw:", tx);
+  it("Closes the vault", async () => {
+    const tx = await program.methods
+      .close()
+      .accounts({
+        user,
+        vaultState,
+        vault,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      } as any)
+      .rpc();
 
-  //   // Fetch the vault account to verify the withdrawal.
-  //   const vault = await program.account.vault.fetch(vaultAccount.publicKey);
-  //   assert.equal(
-  //     vault.balance.toString(),
-  //     "500",
-  //     "Vault balance should reflect the withdrawn amount"
-  //   );
-  // });
-
-  // it("Closes the vault", async () => {
-  //   const tx = await program.methods
-  //     .close()
-  //     .accounts({
-  //       vault: vaultAccount.publicKey,
-  //       user: program.provider.publicKey,
-  //     })
-  //     .rpc();
-
-  //   console.log("Transaction signature for close:", tx);
-
-  //   // Attempt to fetch the vault account to ensure it has been closed.
-  //   try {
-  //     await program.account.vault.fetch(vaultAccount.publicKey);
-  //     assert.fail("Vault account should not exist after being closed");
-  //   } catch (err) {
-  //     assert.ok("Vault account successfully closed");
-  //   }
-  // });
+    console.log("Transaction signature for close:", tx);
+    console.log("Vault info:", await provider.connection.getAccountInfo(vault));
+    console.log(
+      "Vault balance:",
+      (await provider.connection.getBalance(vault)).toString()
+    );
+  });
 });
