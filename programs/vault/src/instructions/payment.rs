@@ -22,7 +22,7 @@ pub struct Payment<'info> {
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> Payment<'info> {
+impl Payment<'_> {
     pub fn deposit(&mut self, amount: u64) -> Result<()> {
         let cpi_program = self.system_program.to_account_info();
         // let lamport = self.vault.lamports(); //for test

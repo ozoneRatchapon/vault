@@ -24,7 +24,7 @@ pub struct Close<'info> {
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> Close<'info> {
+impl Close<'_> {
     pub fn close(&mut self) -> Result<()> {
         let cpi_program = self.system_program.to_account_info();
 
