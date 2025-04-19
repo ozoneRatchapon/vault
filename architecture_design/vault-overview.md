@@ -1,6 +1,6 @@
 ![Vault Overview](./vault-overview.svg)
 
-```mermaid
+```
 ---
 config:
   look: neo
