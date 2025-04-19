@@ -31,7 +31,7 @@ This program is built using the [Anchor framework](https://www.anchor-lang.com/)
 ## Program Flow Diagram
 
 
-![Vault Program Flow](https://www.mermaidchart.com/raw/5dcf69fe-40e0-4e85-a6f0-f886cd6f7726?theme=light&version=v0.1&format=svg)
+![Vault Program Flow](./architecture_design/vault-overview.svg)
 
 ---
 
